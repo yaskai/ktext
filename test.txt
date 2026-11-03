@@ -1,0 +1,9 @@
+This is a text file. 
+It's purpose is for testing the application.
+It contains these lines...
+
+
+
+
+I hope you like it!
+- Kai
