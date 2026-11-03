@@ -60,24 +60,37 @@ void input_MoveCursor(InputState *inst) {
 
 	Buffer *buf = app_GetInstance()->curr_buf;
 	int prev_x = buf->cursor_col, prev_y = buf->cursor_row;
+	int targ_x = prev_x, targ_y = prev_y;
 
 	if(inst->char_pressed == 'G')
-		buf->cursor_row = buf->num_lines; 
+		targ_y = buf->num_lines;
 
-	buf->cursor_row += move_y;
-	if(buf->cursor_row < 0) buf->cursor_row = 0;
-	if(buf->cursor_row > buf->num_lines - 1) buf->cursor_row = buf->num_lines - 1;
+	targ_y += move_y;
+	if(targ_y < 0) targ_y = 0;
+	if(targ_y > buf->num_lines - 1) targ_y = buf->num_lines - 1;
 
 	BufLine *line = &buf->lines[buf->cursor_row];
 
-	buf->cursor_col += move_x;
-	if(buf->cursor_col > line->len - 2) buf->cursor_col = line->len - 2;
-	if(buf->cursor_col < 0) buf->cursor_col = 0;
-
 	if(inst->char_pressed == '$') 
-		buf->cursor_col = line->len;
+		move_x = line->len - 2 - buf->cursor_col;
 
-	if(inst->char_pressed == '^')
-		buf->cursor_col = 0;
+	if(inst->char_pressed == '^') 
+		move_x = -buf->cursor_col;
+
+	targ_x += move_x;
+	if(targ_x > line->len - 2) targ_x = line->len - 2;
+	if(targ_x < 0) targ_x = 0;
+
+	// Candel x movement if no move is possible 
+	if(prev_x == targ_x) move_x = 0;
+
+	if(abs(move_x)) {
+		buf->wish_col = targ_x;
+	} else {
+		if(buf->wish_col < line->len - 2) targ_x = buf->wish_col;
+	}
+
+	buf->cursor_col = targ_x;
+	buf->cursor_row = targ_y;
 }
 
